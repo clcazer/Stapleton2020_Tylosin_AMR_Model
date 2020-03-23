@@ -1,0 +1,199 @@
+---
+title: "TYL model Ent conc figures"
+author: "Casey Cazer"
+date: "February 23, 2020"
+output: html_document
+---
+```{r setup}
+knitr::opts_knit$set(root.dir = '..') 
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(xlsx)
+library(gridExtra)
+library(plyr)
+
+source('scripts/TYL func boxplots.R')
+```
+
+
+```{r}
+#enterococcus concentrations
+datafiles<-c("NoTYL_NI_", "TYL_NI_", "NoTYL_NI_", "TYL_RWT_", "NoTYL_AFTP_", "TYL_AFTP_", "NoTYL_DFM_", "TYL_DFM_", "NoTYL_ALL_", "TYL_ALL_") #control followed by TYL intervention group. RWT control is the same as NoTYL_NI becuase with no tylosin there can be no withdrawal of tylosin. 
+
+for (i in seq(1,length(datafiles),2)){
+  notyl.cow <- read.table(paste("data/",datafiles[i],"Cow_total_conc.txt", sep=""), sep=",")
+  tyl.cow <- read.table(paste("data/",datafiles[i+1],"Cow_total_conc.txt", sep=""), sep=",")
+  
+  notyl.feed <- read.table(paste("data/",datafiles[i],"Feed_total_conc.txt", sep=""), sep=",")
+  tyl.feed <- read.table(paste("data/",datafiles[i+1],"Feed_total_conc.txt", sep=""), sep=",")
+  
+  notyl.water <- read.table(paste("data/",datafiles[i],"Water_total_conc.txt", sep=""), sep=",")
+  tyl.water <- read.table(paste("data/",datafiles[i+1],"Water_total_conc.txt", sep=""), sep=",")
+  
+  notyl.pen <- read.table(paste("data/",datafiles[i],"Pen_total_conc.txt", sep=""), sep=",")
+  tyl.pen <- read.table(paste("data/",datafiles[i+1],"Pen_total_conc.txt", sep=""), sep=",")
+  
+  
+  diff.cow <- log10(tyl.cow) - log10(notyl.cow)
+  diff.feed <- log10(tyl.feed) - log10(notyl.feed)
+  diff.water <- log10(tyl.water+0.0001) - log10(notyl.water+0.0001) #some water values have 0 CFU/g. add in small amount to avoid infinite/NA values
+  diff.pen <- log10(tyl.pen) - log10(notyl.pen)
+  
+  label <- paste(strsplit(datafiles[i+1], "_")[[1]][2], "_total_conc", sep="")
+  
+  list <- list(tyl.cow, notyl.cow, diff.cow, diff.feed, diff.water, diff.pen)
+  names(list) <- c("tyl.cow", "notyl.cow", "diff.cow", "diff.feed", "diff.water", "diff.pen")
+  
+  assign(label, list)
+
+}
+
+rm(notyl.cow, tyl.cow, diff.cow, diff.cow, tyl.feed, notyl.feed, diff.feed, notyl.water, tyl.water, diff.water, notyl.pen, tyl.pen, diff.pen)
+
+#is there a difference between ent conc in tyl and con?
+min(NI_total_conc[['diff.cow']])
+max(NI_total_conc[['diff.cow']])
+mean(colMeans(NI_total_conc[['diff.cow']]))
+#very little difference when considered in log10
+
+
+quants<-c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99)
+ltype=c("dotted", "dotdash", "longdash", "solid", "longdash", "dotdash", "dotted")
+lcolor=c("black", "#F8766D", "#7CAE00", "#619CFF", "#7CAE00", "#F8766D", "black")
+
+days<-read.table("data/NoTYL_NI_Days.txt", sep=",")
+days<-as.numeric(days[,1]) - 50 #subtract burn-in
+
+scenarios <- c("NI", "RWT", "DFM", "AFTP", "ALL")
+#create figure of Ent conc in cow/pen/feed/water for all scenarios
+
+for (i in 1:length(scenarios)){
+  data <- get(paste(scenarios[i], "_total_conc", sep=""))
+  plot <- func.boxplots(quants, data[['diff.cow']], days, ltype, lcolor, FALSE, FALSE, "Difference in Enterococci Concentrations")
+  label <- paste("plot.cow.EntConcdiff.",scenarios[i], sep="")
+  assign(label, plot)
+  rm(plot, label, data)
+}
+
+for (i in 1:length(scenarios)){
+  data <- get(paste(scenarios[i], "_total_conc", sep=""))
+  plot <- func.boxplots(quants, data[['diff.pen']], days, ltype, lcolor, FALSE, FALSE, "Difference in Enterococci Concentrations")
+  label <- paste("plot.pen.EntConcdiff.",scenarios[i], sep="")
+  assign(label, plot)
+  rm(plot, label, data)
+}
+
+for (i in 1:length(scenarios)){
+  data <- get(paste(scenarios[i], "_total_conc", sep=""))
+  plot <- func.boxplots(quants, data[['diff.feed']][seq(0,3433,24),], days[seq(0,3433,24)], ltype, lcolor, FALSE, FALSE, "Difference in Enterococci Concentrations")
+  label <- paste("plot.feed.EntConcdiff.",scenarios[i], sep="")
+  assign(label, plot)
+  rm(plot, label, data)
+}
+
+#some water values must have 0 CFU/g--resulting in log10 = Inf
+for (i in 1:length(scenarios)){
+  data <- get(paste(scenarios[i], "_total_conc", sep=""))
+  plot <- func.boxplots(quants, data[['diff.water']][seq(0,3433,24),], days[seq(0,3433,24)], ltype, lcolor, FALSE, FALSE, "Difference in Enterococci Concentrations")
+  label <- paste("plot.water.EntConcdiff.",scenarios[i], sep="")
+  assign(label, plot)
+  rm(plot, label, data)
+}
+```
+
+
+all together
+```{r}
+png('figures/Ent_conc_env_interventions.png', height=6000, width=9000, res=300)
+grid.arrange(plot.cow.EntConcdiff.RWT+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("Cattle: Diff. Enterococci Conc.")+
+               xlab("")+
+               ggtitle("RWT"), 
+             plot.cow.EntConcdiff.DFM+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab("")+
+               ggtitle("DFM"), 
+             plot.cow.EntConcdiff.AFTP+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab("")+
+               ggtitle("AFTP"), 
+             plot.cow.EntConcdiff.ALL+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab("")+
+               ggtitle("ALL"),
+             plot.pen.EntConcdiff.RWT+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("Pen: Diff. Enterococci Conc.")+
+               xlab(""), 
+             plot.pen.EntConcdiff.DFM+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab(""), 
+             plot.pen.EntConcdiff.AFTP+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab(""), 
+             plot.pen.EntConcdiff.ALL+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab(""),
+             plot.feed.EntConcdiff.RWT+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("Feed: Diff. Enterococci Conc.")+
+               xlab(""), 
+             plot.feed.EntConcdiff.DFM+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab(""), 
+             plot.feed.EntConcdiff.AFTP+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab(""), 
+             plot.feed.EntConcdiff.ALL+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab(""),
+             plot.water.EntConcdiff.RWT+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("Water: Diff. Enterococci Conc.")+
+               xlab("Days"), 
+             plot.water.EntConcdiff.DFM+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab("Days"), 
+             plot.water.EntConcdiff.AFTP+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab("Days"), 
+             plot.water.EntConcdiff.ALL+
+               scale_y_continuous(limits=c(-0.125,0))+
+               ylab("")+
+               xlab("Days"),ncol=4)
+dev.off()
+
+
+#descriptive analysis of DFM
+apply(log10(DFM_total_conc[['tyl.cow']][3433,]),1,median)
+apply(log10(DFM_total_conc[['notyl.cow']][3433,]),1,median)
+
+apply(log10(NI_total_conc[['tyl.cow']][3433,]),1,median)
+apply(log10(NI_total_conc[['notyl.cow']][3433,]),1,median)
+
+apply(log10(ALL_total_conc[['tyl.cow']][3433,]),1,median)
+apply(log10(ALL_total_conc[['notyl.cow']][3433,]),1,median)
+
+```
+
+
+```{r}
+#impact of DFM on Ent population
+save.image('RData/Model Ent Conc Figs.RData')
+```

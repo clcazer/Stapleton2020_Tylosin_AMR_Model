@@ -1,0 +1,426 @@
+---
+title: "TYL Model figures"
+author: "Casey Cazer"
+date: "February 19, 2020"
+output: html_document
+---
+
+```{r setup}
+knitr::opts_knit$set(root.dir = '..') 
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(xlsx)
+library(gridExtra)
+library(plyr)
+
+source('scripts/TYL func boxplots.R')
+```
+
+TYL concentration in LI
+```{r}
+#import data
+tyl.conc.ni <- read.table("data/TYL_NI_TYL_li_conc.txt", sep=",") 
+days<-read.table("data/NoTYL_NI_Days.txt", sep=",")
+days<-as.numeric(days[,1]) - 50 #subtract burn-1n
+
+quants<-c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99)
+
+tyl.conc.summary<-data.frame(t(apply(tyl.conc.ni, 1, quantile, probs=quants)))
+tyl.conc.summary$days <- days
+
+tyl.conc.plot<-melt(tyl.conc.summary, id.vars="days")
+
+ltype=c("dotted", "dotdash", "longdash", "solid", "longdash", "dotdash", "dotted")
+lcolor=c("black", "#F8766D", "#7CAE00", "#619CFF", "#7CAE00", "#F8766D", "black")
+
+png('figures/tyl_conc.png', height=3000, width=4000, pointsize=24)
+ggplot(tyl.conc.plot, aes(x=days, y=value, group=variable))+
+  geom_line(aes(linetype=variable, color=variable, size=variable))+
+  scale_y_continuous(limits=c(0,2), breaks=c(seq(0,2,0.25)), expand=c(0,0))+
+  ylab("Tylosin Concentration (ug/mL)")+
+  scale_x_continuous(limits=c(0, ceiling(max(days))), breaks=c(seq(0,ceiling(max(days)),20)), labels=c(seq(0,ceiling(max(days)),20)), expand=c(0,0))+
+  xlab('Days')+
+  scale_linetype_manual(values=ltype)+
+  scale_color_manual(values=lcolor)+
+  scale_size_manual(values=rep(4,7))+
+  theme_bw(base_size = 96)+
+  theme(legend.position = "none")
+dev.off()
+
+
+#descriptive
+round(max(tyl.conc.summary$X50.),2)
+round(tyl.conc.summary$X50.[3433],2)
+
+round(max(tyl.conc.summary$X5.),2)
+round(tyl.conc.summary$X5.[3433],2)
+
+round(max(tyl.conc.summary$X95.),2)
+round(tyl.conc.summary$X95.[3433],2)
+```
+
+
+#validation plot. add schmidt 2020 data
+```{r}
+#load data from 2020 tylosin meta-analysis (Cazer et al)
+enc=read.xlsx("data/Extracted Data_long form_meta.xlsx", header=TRUE, sheetName="Enterococcus Phenotypic")
+#select only measurements of Perc Isolates Resistant against ERY (not all studies measured TYL)
+enc <- filter(enc, AM.R=="ERY" & Outcome.Type=="PercIsolatesR") %>% select("Study", "Day", "AM.R", "Group", "Value")
+enc$Day <- as.numeric(as.character(enc$Day))
+enc$Value <- enc$Value/100 #Value was in percent format, convert to proportion (decimal) to match schmidt
+
+#exclude Beukers day 225--occured after end of tylosin administration. No other studies sampled on day 225
+enc<-filter(enc, Day!=225)
+
+schmidt<-read.xlsx("data/Schmidt validation data.xlsx", header=TRUE, sheetName="Sheet1")
+schmidt <- select(schmidt, "Study", "Day", "AM.R", "Group", "Value")
+
+enc <- bind_rows(enc, schmidt)
+
+#exclude days==NA (Molitoris)
+enc<-filter(enc, !is.na(Day))
+
+tyl=enc[which(enc$Group=="Tylosin"),]
+con=enc[which(enc$Group=="Control"),]
+
+enc.diff=merge(tyl, con, by=c("Study", "AM.R", "Day"))
+enc.diff$Difference=enc.diff$Value.x-enc.diff$Value.y
+
+enc.diff <- dplyr::rename(enc.diff, days=Day, value=Difference, variable=Study)
+
+
+#validation data
+valid.notyl.cow <- read.table(paste("data/NoTYL_validation_Prop_cow_res.txt", sep=""), sep=",")
+valid.tyl.cow <- read.table(paste("data/TYL_validation_Prop_cow_res.txt", sep=""), sep=",")
+valid.diff.cow <- valid.tyl.cow - valid.notyl.cow
+
+
+diff.summary <- data.frame(t(apply(valid.diff.cow, 1, quantile, probs=quants)))
+#days is longer in validation runs
+days.v<-read.table("data/NoTYL_validation_Days.txt", sep=",")
+days.v<-as.numeric(days.v[,1]) - 50 #subtract burn-1n
+diff.summary$days <- days.v
+
+diff.plot <- melt(diff.summary, id.vars="days")
+
+C<-ggplot(diff.plot, aes(x=days, y=value, group=variable))+
+  geom_line(aes(linetype=variable, color=variable, size=4))+
+     scale_y_continuous(limits=c(-0.2,1), breaks=c(seq(-0.2,1,0.1)), expand=c(0,0))+
+    ylab("Difference in Proportion Resistant")+
+  geom_point(data=enc.diff, aes(x=days, y=value, size=4, stroke=5, shape=factor(variable))) +scale_shape_manual(values=c(21,22,4,24,23))+
+  scale_x_continuous(limits=c(0, ceiling(max(enc.diff$days))), breaks=c(seq(0,ceiling(max(enc.diff$days)),20)), labels=c(seq(0,ceiling(max(enc.diff$days)),20)), expand=c(0,0))+
+  xlab('Days')+
+  scale_linetype_manual(values=ltype)+
+  scale_color_manual(values=lcolor)+
+  theme_bw(base_size = 96)+
+  theme(legend.position = "none")
+
+png('figures/NI_validation_difference.png', height=3000, width=4000, pointsize=24)
+ plot(C)
+dev.off()
+
+#plot proportion resistant for TYL and NoTYL (control) groups
+tyl.summary <- data.frame(t(apply(valid.tyl.cow, 1, quantile, probs=quants)))
+#days is longer in validation runs
+tyl.summary$days <- days.v
+tyl.plot <- melt(tyl.summary, id.vars="days")
+
+names(tyl)<-c("variable", "days", "AM.R", "Group", "value")
+tyl$variable<-as.factor(tyl$variable)
+
+
+con.summary <- data.frame(t(apply(valid.notyl.cow, 1, quantile, probs=quants)))
+#days is longer in validation runs
+con.summary$days <- days.v
+con.plot <- melt(con.summary, id.vars="days")
+
+names(con)<-c("variable", "days", "AM.R", "Group", "value")
+con$variable<-as.factor(con$variable)
+
+A<-ggplot(tyl.plot, aes(x=days, y=value, group=variable))+
+  geom_line(aes(linetype=variable, color=variable, size=4))+
+     scale_y_continuous(limits=c(0,1), breaks=c(seq(0,1,0.1)), expand=c(0,0))+
+    ylab("Proportion Resistant")+
+  geom_point(data=tyl, aes(x=days, y=value, size=4, stroke=5, shape=factor(variable))) +scale_shape_manual(values=c(21,22,4,24,23))+
+  scale_x_continuous(limits=c(0, ceiling(max(tyl$days))), breaks=c(seq(0,ceiling(max(tyl$days)),20)), labels=c(seq(0,ceiling(max(tyl$days)),20)), expand=c(0,0))+
+  xlab('Days')+
+  ggtitle('Tylosin')+
+  scale_linetype_manual(values=ltype)+
+  scale_color_manual(values=lcolor)+
+  theme_bw(base_size = 96)+
+  theme(legend.position = "none")
+
+B<-ggplot(con.plot, aes(x=days, y=value, group=variable))+
+  geom_line(aes(linetype=variable, color=variable, size=4))+
+     scale_y_continuous(limits=c(0,1), breaks=c(seq(0,1,0.1)), expand=c(0,0))+
+    ylab("")+
+  geom_point(data=con, aes(x=days, y=value, size=4, stroke=5, shape=factor(variable))) +scale_shape_manual(values=c(21,22,4,24,23))+
+  scale_x_continuous(limits=c(0, ceiling(max(tyl$days))), breaks=c(seq(0,ceiling(max(tyl$days)),20)), labels=c(seq(0,ceiling(max(tyl$days)),20)), expand=c(0,0))+
+  xlab('Days')+
+  ggtitle('Control')+
+  scale_linetype_manual(values=ltype)+
+  scale_color_manual(values=lcolor)+
+  theme_bw(base_size = 96)+
+  theme(legend.position = "none")
+
+png('figures/Prop_cow_res_validation.png', height=1500, width=4500, pointsize=24)
+grid.arrange(plot(A),plot(B),ncol=2)
+dev.off()
+
+
+#all together:
+png('figures/Prop_cow_res_validation2.png', height=4500, width=2250, pointsize=24*10)
+grid.arrange(plot(A)+ggtitle('A'), plot(B)+ylab('Proportion Resistant')+ggtitle('B'), plot(C)+ggtitle('C'),
+ncol=1)
+dev.off()
+
+#number of validation obs that fall within 25-75th percentiles
+for (i in 1:nrow(enc)){
+  D=enc$Day[i]
+  G=enc$Group[i]
+  V=enc$Value[i]
+  index=match(D,days.v)
+  if (G=="Tylosin"){
+    p25=tyl.summary$X25.[index]
+    p75=tyl.summary$X75.[index]
+    p05=tyl.summary$X5.[index]
+    p95=tyl.summary$X95.[index]
+  }else{
+    p25=con.summary$X25.[index]
+    p75=con.summary$X75.[index]
+    p05=con.summary$X5.[index]
+    p95=con.summary$X95.[index]
+  }
+  enc$in.range1[i]<-p25<V & V<p75
+  enc$in.range2[i]<-p05<V & V<p95
+  rm(D,G,V,index,p25,p75, p05, p95)
+}
+
+group_by(enc, Group) %>% dplyr::summarise(n=n(),n.inrange1=sum(in.range1), inrange2=sum(in.range2))
+
+for (i in 1:nrow(enc.diff)){
+  D=enc.diff$days[i]
+  V=enc.diff$value[i]
+  index=match(D,days.v)
+ 
+    p25=diff.summary$X25.[index]
+    p75=diff.summary$X75.[index]
+    p05=diff.summary$X5.[index]
+    p95=diff.summary$X95.[index]
+  
+  enc.diff$in.range1[i]<-p25<V & V<p75
+  enc.diff$in.range2[i]<-p05<V & V<p95
+  rm(D,V,index,p25,p75, p05, p95)
+}
+
+dplyr::summarise(enc.diff, n=n(),n.inrange1=sum(in.range1), inrange2=sum(in.range2))
+```
+
+
+plot the difference in proportion resistant between TYL and no TYL control for each scenario (NI, DFM, AFTP, RWT, ALL).
+Can take the difference between individual simulations because parameter values are the same for each simulation (due to random number seed)
+```{r}
+#check assumption that parameter values are equal for each simulation
+NoTYL_NI_param <- read.table("data/NoTYL_NI_MC_parameters.txt", sep=",")
+TYL_NI_param <- read.table("data/TYL_NI_MC_parameters.txt", sep=",")
+all.equal(NoTYL_NI_param, TYL_NI_param) #correct
+rm(NoTYL_NI_param, TYL_NI_param)
+
+#automate loading data and calculating differences
+datafiles<-c("NoTYL_NI_", "TYL_NI_", "NoTYL_NI_", "TYL_RWT_", "NoTYL_AFTP_", "TYL_AFTP_", "NoTYL_DFM_", "TYL_DFM_", "NoTYL_ALL_", "TYL_ALL_") #control followed by TYL intervention group. RWT control is the same as NoTYL_NI becuase with no tylosin there can be no withdrawal of tylosin. 
+
+#load in proportion resistant
+for (i in seq(1,length(datafiles),2)){
+  notyl.cow <- read.table(paste("data/",datafiles[i],"Prop_cow_res.txt", sep=""), sep=",")
+  tyl.cow <- read.table(paste("data/",datafiles[i+1],"Prop_cow_res.txt", sep=""), sep=",")
+ 
+  diff.cow <- tyl.cow - notyl.cow
+  
+  label <- paste(strsplit(datafiles[i+1], "_")[[1]][2], "_Prop_res", sep="")
+  
+  list <- list(notyl.cow, tyl.cow, diff.cow)
+  names(list) <- c("notyl.cow", "tyl.cow", "diff.cow")
+  
+  assign(label, list)
+}
+rm(notyl.cow, tyl.cow, diff.cow, list)
+
+#descriptive stats
+tyl.cow.summary<-as.data.frame(t(apply(NI_Prop_res[['tyl.cow']],1, quantile, probs=quants)))
+round(min(tyl.cow.summary$`50%`),4)
+round(max(tyl.cow.summary$`50%`),4)
+round(tyl.cow.summary$`50%`[3433],4)
+
+round(min(tyl.cow.summary$`5%`),4)
+round(max(tyl.cow.summary$`5%`),4)
+round(tyl.cow.summary$`5%`[3433],4)
+
+round(min(tyl.cow.summary$`95%`),4)
+round(max(tyl.cow.summary$`95%`),4)
+round(tyl.cow.summary$`95%`[3433],4)
+
+sim.PR.change=NI_Prop_res[['tyl.cow']][3433,]-NI_Prop_res[['tyl.cow']][1,]
+sum(sim.PR.change<0) #363 simulations with ending proportion less than starting
+sum(sim.PR.change==0) #14 simulations with no change
+apply(sim.PR.change, 1, quantile, probs=quants)
+apply(sim.PR.change, 1, quantile, probs=0.68) #68% of sims had a change of 8.5 percentage points or less (increase or decrease)
+
+
+con.cow.summary<-as.data.frame(t(apply(NI_Prop_res[['notyl.cow']],1, quantile, probs=quants)))
+round(min(con.cow.summary$`50%`),4)
+round(max(con.cow.summary$`50%`),4)
+round(con.cow.summary$`50%`[3433],4)
+
+round(min(con.cow.summary$`5%`),4)
+round(max(con.cow.summary$`5%`),4)
+round(con.cow.summary$`5%`[3433],4)
+
+round(min(con.cow.summary$`95%`),4)
+round(max(con.cow.summary$`95%`),4)
+round(con.cow.summary$`95%`[3433],4)
+
+sim.PR.change.con=NI_Prop_res[['notyl.cow']][3433,]-NI_Prop_res[['notyl.cow']][1,]
+sum(sim.PR.change.con<0) #799 simulations with ending proportion less than starting
+sum(sim.PR.change.con==0) #13 simulations with no change
+apply(sim.PR.change.con, 1, quantile, probs=quants)
+apply(sim.PR.change.con, 1, quantile, probs=0.85) #85% of sims had an increase of 8.5 percentage points or less 
+apply(sim.PR.change.con, 1, quantile, probs=0.05) #4-5 percent had a decrease of more than 8.5 percentage points. So 80% of sims had change of 8.5 pp or less
+
+#could have just used the diff.summary, con.summary, and tyl.summary from validation run and limit to rows 1:3433
+diff.cow.summary<-as.data.frame(t(apply(NI_Prop_res[['diff.cow']],1, quantile, probs=quants)))
+round(min(diff.cow.summary$`50%`),4)
+round(max(diff.cow.summary$`50%`),4)
+round(diff.cow.summary$`50%`[3433],4)
+
+round(max(diff.cow.summary$`75%`),4)
+round(max(diff.cow.summary$`95%`),4)
+
+#plotting
+
+scenarios <- c("NI", "RWT", "DFM", "AFTP", "ALL")
+#create figure of Prop res in cow for all scenarios
+for (i in 1:length(scenarios)){
+  data <- get(paste(scenarios[i], "_Prop_res", sep=""))
+  plot <- func.boxplots(quants, data[['diff.cow']], days, ltype, lcolor, FALSE, TRUE, "Difference in Proportion Resistant")
+  label <- paste("plot.cow.Pr.",scenarios[i], sep="")
+  assign(label, plot)
+  rm(plot, label, data)
+}
+
+for (i in 1:length(scenarios)){
+  data <- get(paste(scenarios[i], "_Prop_res", sep=""))
+  plot <- func.boxplots(quants, data[['tyl.cow']], days, ltype, lcolor, FALSE, TRUE, "Proportion Resistant: TYL")
+  label <- paste("plot.cow.tylPr.",scenarios[i], sep="")
+  assign(label, plot)
+  rm(plot, label, data)
+}
+```
+
+
+#plotting Prop Res in each intervention
+```{r}
+#is the increase in difference between tyl and con groups due to increase in R in tyl or decrease in con?
+#plot(func.boxplots(quants, NI_Prop_res[['tyl.cow']], days, ltype, lcolor, FALSE, TRUE, "Tylosin"))
+#plot(func.boxplots(quants, NI_Prop_res[['notyl.cow']], days, ltype, lcolor, FALSE, TRUE, "Control"))
+#increase in tyl group
+#proportion resistant in cow
+
+##this is duplicative with the validation plot above (validation plot extends to day 220 compared to 143)
+png('figures/Prop_cow_res_NI.png', height=1500, width=4500, res=300)
+grid.arrange(plot(func.boxplots(quants, NI_Prop_res[['tyl.cow']], days, ltype, lcolor, FALSE, TRUE, "Proportion Resistant"))+
+               ggtitle("Tylosin"),
+             plot(func.boxplots(quants, NI_Prop_res[['notyl.cow']], days, ltype, lcolor, FALSE, TRUE, ""))+
+               ggtitle("Control"), ncol=2)
+dev.off()
+
+#differences in proportion resistant in cow for each intervention
+png('figures/Prop_cow_res_TYLinterventions.png', height=3000, width=4500, res=300)
+grid.arrange(plot.cow.tylPr.RWT+
+               ylab("Proportion Resistant: TYL")+
+               xlab("")+
+               ggtitle("RWT"), 
+             plot.cow.tylPr.DFM+
+               ylab("")+
+               xlab("")+
+               ggtitle("DFM"), 
+             plot.cow.tylPr.AFTP+
+               ggtitle("AFTP"), 
+             plot.cow.tylPr.ALL+
+               ylab("")+
+               xlab("Days")+
+               ggtitle("ALL"), ncol=2)
+dev.off()
+
+
+
+#differences in proportion resistant in cow for each intervention
+png('figures/Prop_cow_res_interventions.png', height=3000, width=4500, res=300)
+grid.arrange(plot.cow.Pr.RWT+
+               scale_y_continuous(limits=c(0,0.1))+
+               ylab("Difference in Proportion Resistant")+
+               xlab("")+
+               ggtitle("A"), 
+             plot.cow.Pr.DFM+
+               scale_y_continuous(limits=c(0,0.1))+
+               ylab("")+
+               xlab("")+
+               ggtitle("B"), 
+             plot.cow.Pr.AFTP+
+               scale_y_continuous(limits=c(0,0.1))+
+               ggtitle("C"), 
+             plot.cow.Pr.ALL+
+               scale_y_continuous(limits=c(0,0.1))+
+               ylab("")+
+               xlab("Days")+
+               ggtitle("D"), ncol=2)
+dev.off()
+
+png('figures/Prop_cow_res_interventions0_100.png', height=3000, width=4500, res=300)
+grid.arrange(plot.cow.Pr.RWT+
+               ylab("Difference in Proportion Resistant")+
+               xlab("")+
+               ggtitle("A"), 
+             plot.cow.Pr.DFM+
+               ylab("")+
+               xlab("")+
+               ggtitle("B"), 
+             plot.cow.Pr.AFTP+
+               ggtitle("C"), 
+             plot.cow.Pr.ALL+
+               ylab("")+
+               xlab("Days")+
+               ggtitle("D"), ncol=2)
+dev.off()
+
+#descriptive stats
+#impact of intervention from max PR to day 143
+max(filter(plot.cow.Pr.RWT[['data']], variable=='X75.') %>% select(value))
+filter(plot.cow.Pr.RWT[['data']], variable=='X75.', days==143) %>% select(value)
+
+max(filter(plot.cow.Pr.RWT[['data']], variable=='X95.') %>% select(value))
+filter(plot.cow.Pr.RWT[['data']], variable=='X95.', days==143) %>% select(value)
+
+max(filter(plot.cow.Pr.AFTP[['data']], variable=='X75.') %>% select(value))
+filter(plot.cow.Pr.AFTP[['data']], variable=='X75.', days==143) %>% select(value)
+
+max(filter(plot.cow.Pr.AFTP[['data']], variable=='X95.') %>% select(value))
+filter(plot.cow.Pr.AFTP[['data']], variable=='X95.', days==143) %>% select(value)
+
+#time of AFTP decline
+filter(plot.cow.Pr.AFTP[['data']],  days>112 & days<120) %>% group_by(variable) %>% summarise(max=max(value), min=min(value), day.max=days[which.max(value)], day.min=days[which.min(value)])
+
+filter(plot.cow.Pr.AFTP[['data']],  days==143) %>% group_by(variable) %>% summarise(value=value)
+
+#DFM vs NI
+filter(plot.cow.Pr.DFM[['data']],  days==143) %>% group_by(variable) %>% summarise(v=value)
+filter(plot.cow.Pr.NI[['data']],  days==143) %>% group_by(variable) %>% summarise(v=value)
+```
+
+
+```{r}
+save.image('RData/Model Prop Res Cow Figs.RData')
+```
