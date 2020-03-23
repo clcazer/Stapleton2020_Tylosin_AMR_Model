@@ -1,4 +1,4 @@
-#Modeling the effect of tylosin on macrolide-resistant Enterococcus in feedlots and reducing resistance transmission
+#Modeling the effect of tylosin on macrolide-resistant enterococci in feedlots and reducing resistance transmission
 
 The R Analysis folder provides input for the Matlab model and analyzes the output from the Matlab model. 
 Within the scripts folder, "TYL model parameter distributions.Rmd" is used before the Matlab model to determine the model parameter distributions. It uses two excel files in the data folder: "All Parameters + Citations_cc_2_13_20.xlsx" and "NARMS-Data-Cecal-2013-2017.xlsx".
