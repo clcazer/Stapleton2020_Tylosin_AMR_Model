@@ -11,7 +11,9 @@ Results from MatLab (txt files) should be saved or copied to the R Analysis/data
 General information
 
 Title of the paper: Modeling the Effect of Tylosin on Macrolide-Resistant Enterococci in Feedlots and Reducing Resistance Transmission
+
 Journal:
+
 Authors and ORCIDs:
 -G. Sean Stapleton: 0000-0002-1784-6577
 -Casey L Cazer: 0000-0002-2290-1868
