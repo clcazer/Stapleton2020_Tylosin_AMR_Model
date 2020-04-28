@@ -13,7 +13,7 @@ General information
 Title of the paper: Modeling the Effect of Tylosin on Macrolide-Resistant Enterococci in Feedlots and Reducing Resistance Transmission
 Journal:
 Authors and ORCIDs:
--G. Sean Stapleton:
+-G. Sean Stapleton: 0000-0002-1784-6577
 -Casey L Cazer: 0000-0002-2290-1868
 -Yrjo T. Grohn: 0000-0002-2721-9833
 
