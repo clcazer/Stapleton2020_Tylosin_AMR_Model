@@ -23,7 +23,7 @@ Corresponding author: G. Sean Stapleton, gss94@cornell.edu
 
 ---------------
 Code Citation:
-Cazer, Casey L., and Stapleton G. Sean. (2020). "Replication Package for Modeling the Effect of Tylosin on Macrolide-Resistant Enterococci in Feedlots and Reducing Resistance Transmission" (version 1) [R files and MatLab files]. DOI: 10.5281/zenodo.3724925
+Cazer, Casey L., and Stapleton G. Sean. (2020). "Replication Package for Modeling the Effect of Tylosin on Macrolide-Resistant Enterococci in Feedlots and Reducing Resistance Transmission" (version 1) [R files and MatLab files]. DOI: 10.5281/zenodo.3724910
 Code last updated: April 28, 2020
 
 Code corresponding author: Casey L. Cazer, clc248@cornell.edu
