@@ -1,0 +1,137 @@
+#title: "TYL model sensitivity analysis"
+#author: "Casey Cazer"
+#Last update: "April 28, 2020"
+
+install.packages("checkpoint")
+library(checkpoint)
+checkpoint("2020-03-01")
+
+library(tidystats)
+library(plyr)
+library(dplyr)
+library(tibble)
+library(ggplot2)
+library(xlsx)
+
+
+#use TYL_NI models
+#load data
+datafiles<-c("NoTYL_NI_", "TYL_NI_")
+
+i=1
+notyl.cow <- read.table(paste("data/",datafiles[i],"Prop_cow_res.txt", sep=""), sep=",")
+tyl.cow <- read.table(paste("data/",datafiles[i+1],"Prop_cow_res.txt", sep=""), sep=",")
+  
+notyl.feed <- read.table(paste("data/",datafiles[i],"Prop_feed_res.txt", sep=""), sep=",")
+tyl.feed <- read.table(paste("data/",datafiles[i+1],"Prop_feed_res.txt", sep=""), sep=",")
+  
+notyl.water <- read.table(paste("data/",datafiles[i],"Prop_water_res.txt", sep=""), sep=",")
+tyl.water <- read.table(paste("data/",datafiles[i+1],"Prop_water_res.txt", sep=""), sep=",")
+  
+notyl.pen <- read.table(paste("data/",datafiles[i],"Prop_pen_res.txt", sep=""), sep=",")
+tyl.pen <- read.table(paste("data/",datafiles[i+1],"Prop_pen_res.txt", sep=""), sep=",")
+
+notyl.mc <- read.table(paste("data/",datafiles[i],"MC_parameters.txt", sep=""), sep=",")
+tyl.mc <- read.table(paste("data/",datafiles[i+1],"MC_parameters.txt", sep=""), sep=",")
+
+tyl.li <- read.table(paste("data/",datafiles[i+1],"TYL_li_conc.txt", sep=""), sep=",")
+days <- read.table(paste("data/",datafiles[i+1],"Days.txt", sep=""), sep=",") -50 #remove burnin
+
+#note that the monte carlo parameter values are the same in both simulations due to random seed
+all.equal(tyl.mc, notyl.mc)
+
+colnames(tyl.mc) <- c("delta", "lambda_s", "lambda_usi", "lambda_lsi", "lambda_li", "mu",
+	"aero", "log2_MIC_sus", "log2_MIC_res", "Hill_sus", "Hill_res", "W_c", "F_c", "P_c", "DFM", "log10_K_c", "plasmid", "R_c", "Trough", "log10_K_w",
+    "R_w", "Bunk", "K_f", "R_f", "Ingested_death", "Pen", "log10_K_p", "R_p", "Fit", "W_to_P", "P_to_W", "F_to_P", "P_to_F", "C_to_P", "Zc", "Zw", "Zf",
+    "Zp", "Yc", "Yw", "Yf", "Yp")
+colnames(notyl.mc) <- c("delta", "lambda_s", "lambda_usi", "lambda_lsi", "lambda_li", "mu",
+	"aero", "log2_MIC_sus", "log2_MIC_res", "Hill_sus", "Hill_res", "W_c", "F_c", "P_c", "DFM", "log10_K_c", "plasmid", "R_c", "Trough", "log10_K_w",
+    "R_w", "Bunk", "K_f", "R_f", "Ingested_death", "Pen", "log10_K_p", "R_p", "Fit", "W_to_P", "P_to_W", "F_to_P", "P_to_F", "C_to_P", "Zc", "Zw", "Zf",
+    "Zp", "Yc", "Yw", "Yf", "Yp")
+
+
+
+#range of realized parameter values: min, max, median
+summary.func <- function(x) {
+      c(min = min(x), median = median(x), max = max(x))
+}
+
+param.range <- signif(sapply(tyl.mc, summary.func),2)
+write.xlsx(param.range, "results/param_range.xlsx")
+
+
+#use last timepoint for sensitivity analysis--day 143: index 3433
+#feed troughs are reset every day. so take the timepoint before: day 142.9583: index 3432
+tail(days, n=8)
+
+t=3432
+notyl.dat <- rbind(notyl.cow[t,], notyl.feed[t,], notyl.pen[t,], notyl.water[t,])
+row.names(notyl.dat) <- c("cow", "feed", "pen", "water")
+notyl.dat <- as.data.frame(t(notyl.dat))
+
+tyl.dat <- rbind(tyl.cow[t,], tyl.feed[t,], tyl.pen[t,], tyl.water[t,])
+row.names(tyl.dat) <- c("cow", "feed", "pen", "water")
+tyl.dat <- as.data.frame(t(tyl.dat))
+
+diff.dat <- tyl.dat - notyl.dat
+
+cow.cor<-ldply(tyl.mc, function(x) as.data.frame(tidy_stats(cor.test(x, diff.dat$cow, method="kendall"))))
+pen.cor<-ldply(tyl.mc, function(x) as.data.frame(tidy_stats(cor.test(x, diff.dat$pen, method="kendall"))))
+feed.cor<-ldply(tyl.mc, function(x) as.data.frame(tidy_stats(cor.test(x, diff.dat$feed, method="kendall"))))
+water.cor<-ldply(tyl.mc, function(x) as.data.frame(tidy_stats(cor.test(x, diff.dat$water, method="kendall"))))
+
+#apply benjamini hochberg correction to each compartment (cow, pen, water, feed)
+#beware that BH() from sogf package returns the p-values in a sorted order
+#p.adjust for BH returns the P-value times m/i (adjusted P-value), where m is the number of tests and i is the rank of the p-value. Need to select a FDR (Q) and then identify the largest adjusted P-value that is less than or equal to Q. All tests with un-adjusted P-values equal to or less than that critical value are significant
+#P <= (i/m)*Q
+#P(m/i) <= Q
+Q=0.05
+for (i in c("cow", "pen", "feed", "water")){
+  dat <- get(paste(i,'cor',sep="."))
+dat$BH.p <- p.adjust(dat$statistics.p, method="BH")
+dat <- arrange(dat, statistics.p)
+index<-max(which(dat$BH.p<Q))
+dat$BH.sig <- c(rep(TRUE,index), rep(FALSE,nrow(dat)-index))
+assign(paste(i,'cor',sep="."),dat)
+}
+
+SA <- bind_rows("cows"=filter(cow.cor, BH.sig==TRUE) %>% select(param=.id, statistics.estimate),
+          "pen"=filter(pen.cor, BH.sig==TRUE) %>% select(param=.id, statistics.estimate),
+          "feed"=filter(feed.cor, BH.sig==TRUE) %>% select(param=.id, statistics.estimate),
+          "water"=filter(water.cor, BH.sig==TRUE) %>% select(param=.id, statistics.estimate),
+          .id="compartment")
+
+#which compartments to present?
+ggplot(SA, aes(param, statistics.estimate, fill=compartment))+
+  geom_bar(position="dodge", stat="identity")
+#the correlation coefficients are nearly equal across all compartments
+#present average correlation coefficient across compartments
+
+SA.mean <- dplyr::group_by(SA, param) %>% summarise(estimate=mean(statistics.estimate))
+SA.mean$param <- factor(SA.mean$param, levels=SA.mean$param[order(SA.mean$estimate)])
+
+labels<-dplyr::recode(levels(SA.mean$param),
+               "log2_MIC_sus"=expression("log"[2]~"MIC"[S]),
+               "log2_MIC_res"=expression("log"[2]~"MIC"[R]),
+               "Fit"=expression(alpha[r]),
+               "aero"=expression(psi),
+               "Hill_sus"=expression("H"[S]),
+               "lambda_li"=expression(lambda[li]),
+               'mu'=expression(mu),
+               "R_p"=expression("R"[P]),
+               "Yc"=expression("Y"[C]),
+               "Yf"=expression("Y"['F']),
+               "Yp"=expression("Y"[P]))
+
+ggsave('figures/Fig 5 sensitivity_analysis_mean.png',
+ggplot(SA.mean, aes(param, estimate))+
+  geom_bar(position="identity", stat="identity")+
+  coord_flip()+
+  scale_y_continuous(limits=c(-0.4, 0.4), breaks=seq(-0.4,0.4,0.1))+
+  scale_x_discrete(labels=labels)+
+  ylab("Kendall Correlation Coefficient")+
+  xlab("Parameter")+
+  theme_bw(base_size=20),
+width=6,
+height=5,
+dpi=320)

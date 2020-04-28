@@ -1,0 +1,97 @@
+[1] "These are the parameter distributions for the TYL model"
+[1] ""
+[1] "deg follows lognorm distribution with parameters:"
+meanlog 
+   -5.7 
+sdlog 
+  0.7 
+[1] ""
+[1] "preference for normal if nothing fits well. Sorption normal distribution:"
+mean 
+ 0.7 
+ sd 
+0.1 
+[1] ""
+[1] "Environment/Pen Intake, only two estimates, uniform"
+[1] 12.5
+[1] 31.2
+[1] ""
+[1] "Feed intake: only two estimates, based on personal communications, uniform dist"
+[1] 458
+[1] 517
+[1] ""
+[1] "Water intake, LogNorm"
+meanlog 
+    7.5 
+sdlog 
+  0.2 
+[1] ""
+[1] "Fitness cost, Weibull. convert back to percentage if needed"
+scale 
+ 0.03 
+shape 
+  1.7 
+[1] ""
+[1] "Anaerobic MIC penalty, folded normal"
+mean 
+   0 
+sd 
+ 1 
+[1] ""
+[1] "Enterococcus Growth, LogNormal; truncate 0,1"
+meanlog 
+   -2.1 
+sdlog 
+  1.1 
+[1] ""
+[1] "Enterococcus death rate in pen, Log Normal; negate the value after random draw"
+meanlog 
+   -5.5 
+sdlog 
+  0.8 
+[1] ""
+[1] "Enterococcus death rate in water, Uniform"
+[1] -0.05
+[1] -0.03
+[1] ""
+[1] "Enterococcus death rate in feed, Uniform"
+[1] -0.02
+[1] -0.01
+[1] ""
+[1] "Starting fraction resistant, beta is logical because bounded on [0,1]"
+shape1 
+   0.4 
+shape2 
+   4.4 
+[1] ""
+[1] "Plasmid transfer rate, LogNormal"
+meanlog 
+  -12.2 
+sdlog 
+  4.7 
+[1] ""
+[1] "Cattle carrying capacity, Weibull"
+shape 
+  5.9 
+scale 
+  5.7 
+[1] ""
+[1] "Pen carrying capacity, Weibull"
+shape 
+    4 
+scale 
+  5.9 
+[1] ""
+[1] "Water carrying capacity, Uniform"
+[1] 2.1
+[1] 1.2
+[1] ""
+[1] 2
+[1] 4.4
+[1] 6.7
+[1] ""
+[1] "MIC Susceptible distribution, Normal, truncate distribution at -3 (half of smallest tested value) and  (MIC = 16; open interval), then reverse log2 transform"
+mean 
+   1 
+ sd 
+0.8 

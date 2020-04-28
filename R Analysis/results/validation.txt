@@ -1,0 +1,14 @@
+[1] "Number of validation points for TYL and CON groups that fall in 25-75th percentile range (Range1) and 5-95th percentile range (Range2)"
+# A tibble: 3 x 5
+  Group          n n.inrange1 inrange2 inrange1perc
+  <chr>      <int>      <int>    <int>        <dbl>
+1 Control       21         15       19        0.714
+2 IntTylosin     3          0        2        0    
+3 Tylosin       21         11       20        0.524
+[1] ""
+[1] "Number of validation points for TYL - CON (TYL effect) that fall in 25-75th percentile range (Range1) and 5-95th percentile range (Range2)"
+   n n.inrange1 inrange2 inrange2perc
+1 21          4       10    0.4761905
+[1] ""
+[1] "Jacob 2008 (not used in model parameterization), where does it fall in the model results? percentile of the TYL-CON value"
+[1] 0.899

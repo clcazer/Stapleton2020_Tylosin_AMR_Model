@@ -1,0 +1,24 @@
+[1] "difference between TYL_INT and TYL_NI, CON_INT and CON_NI, at the end of the feeding period"
+[1] "RWT, TYL (no CON_RWT)"
+[1] "% with minimal increase or decrease"
+[1] 0.934
+[1] "% with any increase. maximum difference is 0. none have increase due to RWT"
+[1] 1
+[1] 0
+[1] "% maximum decrease"
+[1] -0.3224
+[1] ""
+[1] "DFM, TYL followed by CON"
+[1] "% with minimal increase or decrease"
+[1] 0.991
+[1] 0.998
+[1] "% with minimal increase"
+[1] 0.457
+[1] 0.452
+[1] "% with minimal decrease"
+[1] 0.534
+[1] 0.546
+[1] ""
+[1] "AFTP, TYL"
+[1] "% with minimal increase or decrease"
+[1] 0.944

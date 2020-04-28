@@ -1,0 +1,35 @@
+[1] "effect of TYL (NI scenario) on enterococci concentrations (quantiles) by the end of treatment; TYL-CON, TYL, CON"
+             1%           5%          25%           50%           75%           95% 99%
+3432 -0.0469568 -0.009518703 -0.001785849 -0.0004673407 -0.0001267952 -5.594246e-06   0
+           1%       5%      25%      50%      75%     95%     99%
+3432 154.5595 1645.888 30917.08 193448.5 833344.7 4149715 7654383
+           1%       5%      25%      50%      75%     95%     99%
+3432 157.5358 1652.396 30919.63 194651.2 834590.5 4157203 7663051
+[1] "very little difference in percentiles between tyl and con. difference between counterfactuals (log10 difference) also small"
+[1] ""
+[1] "the largest difference occurs around day 30 (see figure), but it is still a small difference"
+[1] "day 30, NI scenario, enterococci concentration quantiles for TYL-CON, TYL, CON"
+[1] -0.53044
+             1%          5%          25%           50%           75%           95%           99%
+720 -0.09271789 -0.02409649 -0.003874881 -0.0009843753 -0.0002736908 -2.111896e-05 -7.298735e-08
+          1%       5%     25%    50%      75%     95%     99%
+720 224.9036 1747.261 32342.8 193016 829397.2 4155981 7654843
+          1%       5%     25%    50%      75%     95%     99%
+720 224.9368 1761.706 32401.6 195703 835757.8 4157723 7669756
+[1] ""
+[1] "DFM, by design reduces the concentration of enterococci, but did not impact the TYL- CON difference"
+[1] "DFM, median for TYL, CON at end of treatment"
+          50%
+3432 5.095095
+          50%
+3432 5.095901
+[1] "ALL, median for TYL, CON at end of treatment"
+          50%
+3432 5.095636
+          50%
+3432 5.096027
+[1] "NI, median for TYL, CON at end of treatment"
+          50%
+3432 5.286565
+          50%
+3432 5.289257
