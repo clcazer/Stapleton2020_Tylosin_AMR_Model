@@ -77,26 +77,22 @@
 [1] 0.144
 [1] "% with substantial increase"
 [1] 0.047
-[1] ""  [1] "time and magnitude of intervention impact in TYL effect"
-[1] "AFTP"
-[1] "RWT"
 [1] ""
-[1] "DFM vs NI. They are essentially the same for proportion resistant"
-[1] "DFM"
-[1] "NI"
 [1] "time and magnitude of intervention impact in TYL effect"
 [1] "AFTP"
-# A tibble: 7 x 11
-  variable     d113      max     min    d143   d120 day.max day.min d143.reduction week.reduction lrgst.reduction
-  <fct>       <dbl>    <dbl>   <dbl>   <dbl>  <dbl>   <dbl>   <dbl>          <dbl>          <dbl>           <dbl>
-1 X1.      0        0        0       0       0         113     113        0              0               0       
-2 X5.      0.000100 0.000100 0       0       0         113.    113.       0.000100       0.000100        0.000100
-3 X25.     0.00210  0.00210  0.00120 0.00120 0.0014    113     139        0.000900       0.000700        0.000900
-4 X50.     0.0115   0.0115   0.00760 0.0076  0.0088    113     142.       0.00385        0.00265         0.00385 
-5 X75.     0.0816   0.0816   0.0548  0.0548  0.0633    113     143.       0.0268         0.0182          0.0268  
-6 X95.     0.650    0.650    0.486   0.486   0.515     113     143.       0.164          0.135           0.164   
-7 X99.     0.947    0.947    0.802   0.802   0.824     113     143.       0.146          0.123           0.146   
+`summarise()` ungrouping output (override with `.groups` argument)
+# A tibble: 7 x 9
+  variable     d113      max     min    d143 day.max day.min d143.reduction lrgst.reduction
+  <fct>       <dbl>    <dbl>   <dbl>   <dbl>   <dbl>   <dbl>          <dbl>           <dbl>
+1 X1.      0        0        0       0          113     113        0               0       
+2 X5.      0.000100 0.000100 0       0          113.    113.       0.000100        0.000100
+3 X25.     0.00210  0.00210  0.00120 0.00120    113     139        0.000900        0.000900
+4 X50.     0.0115   0.0115   0.00760 0.0076     113     142.       0.00385         0.00385 
+5 X75.     0.0816   0.0816   0.0548  0.0548     113     143.       0.0268          0.0268  
+6 X95.     0.650    0.650    0.486   0.486      113     143.       0.164           0.164   
+7 X99.     0.947    0.947    0.802   0.802      113     143.       0.146           0.146   
 [1] "RWT"
+`summarise()` ungrouping output (override with `.groups` argument)
 # A tibble: 7 x 9
   variable     d113      max     min    d143 day.max day.min d143.reduction lrgst.reduction
   <fct>       <dbl>    <dbl>   <dbl>   <dbl>   <dbl>   <dbl>          <dbl>           <dbl>
@@ -110,6 +106,7 @@
 [1] ""
 [1] "DFM vs NI. They are essentially the same for proportion resistant"
 [1] "DFM"
+`summarise()` ungrouping output (override with `.groups` argument)
 # A tibble: 7 x 2
   variable        v
   <fct>       <dbl>
@@ -121,6 +118,7 @@
 6 X95.     0.732   
 7 X99.     0.964   
 [1] "NI"
+`summarise()` ungrouping output (override with `.groups` argument)
 # A tibble: 7 x 2
   variable        v
   <fct>       <dbl>

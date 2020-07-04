@@ -1,0 +1,14 @@
+[1] "descriptive results (median, 5th, 95th percentiles) for peak (max) and end of treatment (index 3433)"
+[1] "median, peak and end"
+[1] 0.6
+[1] 0.4
+[1] ""
+[1] "5th percentile, peak and end"
+[1] 0.25
+[1] 0.17
+[1] ""
+[1] "95th percentile, peak and end"
+[1] 1.13
+[1] 0.75
+[1] "maximum tyl conc still substantially lowr than intermediate MIC (16 ug/mL)"
+[1] 1.6695

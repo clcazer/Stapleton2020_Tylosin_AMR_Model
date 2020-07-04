@@ -23,11 +23,6 @@
 3432 5.095095
           50%
 3432 5.095901
-[1] "ALL, median for TYL, CON at end of treatment"
-          50%
-3432 5.095636
-          50%
-3432 5.096027
 [1] "NI, median for TYL, CON at end of treatment"
           50%
 3432 5.286565

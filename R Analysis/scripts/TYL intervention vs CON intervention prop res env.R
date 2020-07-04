@@ -21,7 +21,7 @@ source('scripts/TYL func boxplots.R')
 
 #plot the difference in proportion resistant (in pen, feed, water) between TYL and no TYL control for each scenario (NI, DFM, AFTP, RWT, ALL).
 #automate loading data and calculating differences
-datafiles<-c("NoTYL_NI_", "TYL_NI_", "NoTYL_NI_", "TYL_RWT_", "NoTYL_AFTP_", "TYL_AFTP_", "NoTYL_DFM_", "TYL_DFM_", "NoTYL_ALL_", "TYL_ALL_") #control followed by TYL intervention group. RWT control is the same as NoTYL_NI becuase with no tylosin there can be no withdrawal of tylosin. 
+datafiles<-c("NoTYL_NI_", "TYL_NI_", "NoTYL_NI_", "TYL_RWT_", "NoTYL_AFTP_", "TYL_AFTP_", "NoTYL_DFM_", "TYL_DFM_") #control followed by TYL intervention group. RWT control is the same as NoTYL_NI becuase with no tylosin there can be no withdrawal of tylosin. 
 
 #load in proportion resistant
 for (i in seq(1,length(datafiles),2)){
@@ -61,7 +61,7 @@ lcolor=c("black", "#F8766D", "#7CAE00", "#619CFF", "#7CAE00", "#F8766D", "black"
 
 
 #plotting Prop Res in each intervention. pen, feed, water
-scenarios <- c("NI", "RWT", "DFM", "AFTP", "ALL")
+scenarios <- c("NI", "RWT", "DFM", "AFTP")
 
 #create figure of Prop res in pen for all scenarios
 for (i in 1:length(scenarios)){
@@ -126,13 +126,7 @@ grid.arrange(
      xlab("")+
      ggtitle("AFTP")+
      theme(plot.title=element_text(hjust=0.5)), 
-   plot.pen.Pr.ALL+
-     geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
-     ylab("")+
-     xlab("")+
-     ggtitle("ALL")+
-     theme(plot.title=element_text(hjust=0.5)),
-
+   
   #feed plots  
   plot.feed.Pr.RWT+
      geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
@@ -148,12 +142,7 @@ grid.arrange(
      ylab("")+
      xlab("")+
      ggtitle(""), 
-   plot.feed.Pr.ALL+
-     geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
-     ylab("")+
-     xlab("")+
-     ggtitle(""),
-
+   
   #water plots           
   plot.water.Pr.RWT+
      geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
@@ -169,13 +158,8 @@ grid.arrange(
      ylab("")+
      xlab("Days")+
      ggtitle(""), 
-   plot.water.Pr.ALL+
-     geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
-     ylab("")+
-     xlab("Days")+
-     ggtitle(""),
-  ncol=4),
-width=6*4,
+   ncol=3),
+width=6*3,
 height=5*3,
 units="in",
 dpi=320)

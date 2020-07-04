@@ -17,7 +17,7 @@ scripts:
 
 "TYL sensitivity analysis.R": a sensitivity analysis of the TYL model outputs (from TYL no intervention scenario) to model parameters. Figure 5 saved to "figures/". Returns realized range of model parameters to "results/param_range.xlsx".
 
-
+"TYL intervention vs CON intervention prop res cow_LG Pen.R": analyzing the proportion of resistant enterococci in cattle, comparing TYL intervention groups to CON intervention groups, in the model scenario with a large pen size (N=150 cattle). Also analyzes the concentration of TYL in the large intestine. Does not assess validation because the validation studies use a small pen size. Descriptive results are saved to "results/tyl intestine concentrations LGpen.txt", "results/TYL effect LGpen.txt". LG Pen versions of Figures 2 and 4 are created and saved to "figures/".
 
 --------------------------------
 $platform

@@ -34,7 +34,7 @@ lcolor=c("black", "#F8766D", "#7CAE00", "#619CFF", "#7CAE00", "#F8766D", "black"
 #Take the difference between individual simulations because parameter values are the same for each simulation (due to random number seed)
 
 #automate loading data and calculating differences
-TYLdatafiles<-c("TYL_NI_", "TYL_RWT_", "TYL_NI_", "TYL_AFTP_", "TYL_NI_", "TYL_DFM_", "TYL_NI_", "TYL_ALL_") #control (TYL_NI) followed by TYL intervention group.
+TYLdatafiles<-c("TYL_NI_", "TYL_RWT_", "TYL_NI_", "TYL_AFTP_", "TYL_NI_", "TYL_DFM_") #control (TYL_NI) followed by TYL intervention group.
 
 #load in proportion resistant
 for (i in seq(1,length(TYLdatafiles),2)){
@@ -54,7 +54,7 @@ rm(tyl.NI.cow, tyl.I.cow, diff.cow, list, label)
 
 #difference between CON_INT and CON_NI. Note that there is no CON_RWT because TYL can't be withdrawn in CON scenario
 #automate loading data and calculating differences
-CONdatafiles<-c("NoTYL_NI_", "NoTYL_AFTP_", "NoTYL_NI_", "NoTYL_DFM_", "NoTYL_NI_", "NoTYL_ALL_")
+CONdatafiles<-c("NoTYL_NI_", "NoTYL_AFTP_", "NoTYL_NI_", "NoTYL_DFM_")
 
 #load in proportion resistant
 for (i in seq(1,length(CONdatafiles),2)){
@@ -75,7 +75,7 @@ rm(con.NI.cow, con.I.cow, diff.cow, list, label)
 
 #difference between TYL_INT and CON_NI.
 #automate loading data and calculating differences
-datafiles<-c("NoTYL_NI_", "TYL_RWT_", "NoTYL_NI_", "TYL_AFTP_", "NoTYL_NI_", "TYL_DFM_", "NoTYL_NI_", "TYL_ALL_") #control (NoTYL_NI) followed by TYL intervention group.
+datafiles<-c("NoTYL_NI_", "TYL_RWT_", "NoTYL_NI_", "TYL_AFTP_", "NoTYL_NI_", "TYL_DFM_") #control (NoTYL_NI) followed by TYL intervention group.
 
 #load in proportion resistant
 for (i in seq(1,length(datafiles),2)){
@@ -96,7 +96,7 @@ rm(con.NI.cow, tyl.I.cow, diff.cow, list, label)
 
 
 #plotting
-scenarios <- c("RWT", "DFM", "AFTP", "ALL")
+scenarios <- c("RWT", "DFM", "AFTP")
 #create figure of Prop res in cow for all scenarios
 for (i in 1:length(scenarios)){
   TYLdata <- get(paste("TYL_", scenarios[i], "_Prop_res", sep=""))
@@ -147,13 +147,10 @@ grid.arrange(TYLplot.cow.Pr.RWT+
                ggtitle("B"), 
              TYLplot.cow.Pr.AFTP+
                ylab("Difference in Proportion Resistant")+
-               geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
-               ggtitle("D"), 
-             TYLplot.cow.Pr.ALL+
-               ylab("Difference in Proportion Resistant")+
                xlab("Days")+
                geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
-               ggtitle("F"), ncol=1),
+               ggtitle("D"), 
+             ncol=1),
 grid.arrange(ggplot()+
                theme_bw()+
                theme(panel.border=element_blank())+
@@ -165,16 +162,13 @@ grid.arrange(ggplot()+
                ggtitle("C"), 
              CONplot.cow.Pr.AFTP+
                ylab("")+
-               geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
-               ggtitle("E"), 
-             CONplot.cow.Pr.ALL+
-               ylab("")+
                xlab("Days")+
                geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
-               ggtitle("G"), ncol=1),
+               ggtitle("E"),
+             ncol=1),
 ncol=2),
 width=6*2,
-height=5*4,
+height=5*3,
 units="in",
 dpi=320)
 

@@ -21,7 +21,7 @@ source('scripts/TYL func boxplots.R')
 
 #enterococcus concentrations
 #only save data from each day (not every hour) to save memory
-datafiles<-c("NoTYL_NI_", "TYL_NI_", "NoTYL_NI_", "TYL_RWT_", "NoTYL_AFTP_", "TYL_AFTP_", "NoTYL_DFM_", "TYL_DFM_", "NoTYL_ALL_", "TYL_ALL_") #control followed by TYL intervention group. RWT control is the same as NoTYL_NI becuase with no tylosin there can be no withdrawal of tylosin. 
+datafiles<-c("NoTYL_NI_", "TYL_NI_", "NoTYL_NI_", "TYL_RWT_", "NoTYL_AFTP_", "TYL_AFTP_", "NoTYL_DFM_", "TYL_DFM_") #control followed by TYL intervention group. RWT control is the same as NoTYL_NI becuase with no tylosin there can be no withdrawal of tylosin. 
 
 for (i in seq(1,length(datafiles),2)){
   notyl.cow <- read.table(paste("data/",datafiles[i],"Cow_total_conc.txt", sep=""), sep=",")[seq(0,3433,24),]
@@ -70,7 +70,7 @@ days<-as.numeric(days[,1]) - 50 #subtract burn-in
 days <- days[seq(0,3433,24)]
 
 #plotting
-scenarios <- c("NI", "RWT", "DFM", "AFTP", "ALL")
+scenarios <- c("NI", "RWT", "DFM", "AFTP")
 #create figure of Ent conc in cow/pen/feed/water for all scenarios
 
 for (i in 1:length(scenarios)){
@@ -107,14 +107,7 @@ cow <- grid.arrange(plot.cow.EntConcdiff.NI+
                       geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
                       ggtitle("AFTP")+
                       theme(plot.title=element_text(hjust=0.5)), 
-                    plot.cow.EntConcdiff.ALL+
-                      scale_y_continuous(limits=c(-0.125,0))+
-                      ylab("")+
-                      xlab("")+
-                      geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
-                      ggtitle("ALL")+
-                      theme(plot.title=element_text(hjust=0.5)),
-                    ncol=5)
+                    ncol=4)
 
 for (i in 1:length(scenarios)){
   data <- get(paste(scenarios[i], "_total_conc", sep=""))
@@ -146,13 +139,7 @@ pen <- grid.arrange(plot.pen.EntConcdiff.NI+
                       ylab("")+
                       xlab("")+
                       ggtitle(""), 
-                    plot.pen.EntConcdiff.ALL+
-                      scale_y_continuous(limits=c(-0.125,0))+
-                      geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
-                      ylab("")+
-                      xlab("")+
-                      ggtitle(""),
-                    ncol=5)
+                    ncol=4)
 
 for (i in 1:length(scenarios)){
   data <- get(paste(scenarios[i], "_total_conc", sep=""))
@@ -183,14 +170,8 @@ feed <- grid.arrange(plot.feed.EntConcdiff.NI+
                        geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
                        ylab("")+
                        xlab("")+
-                       ggtitle(""), 
-                     plot.feed.EntConcdiff.ALL+
-                       scale_y_continuous(limits=c(-0.125,0))+
-                       geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
-                       ylab("")+
-                       xlab("")+
                        ggtitle(""),
-                     ncol=5)
+                     ncol=4)
 
 #some water values must have 0 CFU/g--resulting in log10 = Inf
 for (i in 1:length(scenarios)){
@@ -222,14 +203,8 @@ water <- grid.arrange(plot.water.EntConcdiff.NI+
                         geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
                         ylab("")+
                         xlab("Days")+
-                        ggtitle(""), 
-                      plot.water.EntConcdiff.ALL+
-                        scale_y_continuous(limits=c(-0.125,0))+
-                        geom_vline(aes(xintercept=113), linetype="longdash", size=1.25)+
-                        ylab("")+
-                        xlab("Days")+
                         ggtitle(""),
-                      ncol=5)
+                      ncol=4)
 
 
 ggsave('figures/Sup Fig 2 Ent_conc_env_interventions.png', 
@@ -238,7 +213,7 @@ grid.arrange(cow,
              feed,
              water,
       ncol=1),
-width=6*5,
+width=6*4,
 height=5*4,
 dpi=320)
 
@@ -264,10 +239,6 @@ quantile(NI_total_conc[['notyl.cow']][30,], quants)
 "DFM, median for TYL, CON at end of treatment"
 quantile(log10(DFM_total_conc[['tyl.cow']][143,]),0.5)
 quantile(log10(DFM_total_conc[['notyl.cow']][143,]),0.5)
-
-"ALL, median for TYL, CON at end of treatment"
-quantile(log10(ALL_total_conc[['tyl.cow']][143,]),0.5)
-quantile(log10(ALL_total_conc[['notyl.cow']][143,]),0.5)
 
 "NI, median for TYL, CON at end of treatment"
 quantile(log10(NI_total_conc[['tyl.cow']][143,]),0.5)
