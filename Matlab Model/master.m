@@ -33,7 +33,7 @@ filename='TYL_RWT_';
 run('TYL_Model_cc.m');
 save(strcat(filename,'cc.mat'));
 
-%No TYL, AM free pen
+%No TYL, AFTP
 Treatment=2; %1=withdrawal, 2=antimicrobial-free pen, 
     %3=probiotic, 4=All, 5=no interventions
 Method=0; %0=no TYL, 1=yes TYL
@@ -41,7 +41,7 @@ filename='NoTYL_AFTP_';
 run('TYL_Model_cc.m');
 save(strcat(filename,'cc.mat'));
 
-%TYL, AM free pen
+%TYL, AFTP
 Treatment=2; %1=withdrawal, 2=antimicrobial-free pen, 
     %3=probiotic, 4=All, 5=no interventions
 Method=1; %0=no TYL, 1=yes TYL
@@ -65,6 +65,7 @@ filename='TYL_DFM_';
 run('TYL_Model_cc.m');
 save(strcat(filename,'cc.mat'));
 
+%{
 %No TYL, All interventions
 Treatment=4; %1=withdrawal, 2=antimicrobial-free pen, 
     %3=probiotic, 4=All, 5=no interventions
@@ -81,3 +82,4 @@ filename='TYL_ALL_';
 run('TYL_Model_cc.m');
 save(strcat(filename,'cc.mat'));
 
+%}

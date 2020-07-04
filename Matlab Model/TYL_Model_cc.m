@@ -35,7 +35,7 @@ dt=0.1; %time step of 0.1h: hours
     
 TYL_start_time=burn; %time when TYL will be given in the feed: hours
 
-if Treatment==1 || Treatment==4 %for withdrawal, stop TYL 30 days earlier
+if Treatment==1 || Treatment==2 || Treatment==4 %for RWT and AFTP, stop TYL 30 days earlier
     TYL_stop_time=TYL_start_time+sim_time-(30*24); %hours
 else
     TYL_stop_time=TYL_start_time+sim_time; %hours
